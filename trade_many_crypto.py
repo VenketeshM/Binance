@@ -7,6 +7,7 @@ import pandas as pd
 from time import sleep
 from binance.error import ClientError
 
+
 client = UMFutures(key=key, secret=secret)
 
 tp = 0.005  # 1 percent
