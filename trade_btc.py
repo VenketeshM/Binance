@@ -9,6 +9,7 @@ from binance.error import ClientError
 
 client = UMFutures(key=key, secret=secret)
 
+# This is btc trade 
 tp = 0.005  # 1 percent
 sl = 0.001  # 0.5 percent
 volume = 50  # volume for one order (if its 10 and leverage is 10, then you put 1 usdt to one position)
