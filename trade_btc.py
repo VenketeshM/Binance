@@ -8,9 +8,9 @@ from binance.error import ClientError
 client = UMFutures(key=key, secret=secret)
 
 # Constants
-tp = 0.015  # Take Profit percentage
-sl = 0.009  # Stop Loss percentage
-volume = 10  # Volume for one order
+tp = 0.010  # Take Profit percentage
+sl = 0.005  # Stop Loss percentage
+volume = 50  # Volume for one order
 leverage = 10  # Leverage
 position_limit = 1  # Maximum number of positions to hold at a time
 order_wait_time = 60  # Time to wait after placing an order (seconds)
