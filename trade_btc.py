@@ -195,5 +195,5 @@ while True:
                     print('Placing order for ', symbol)
                     open_order(symbol, 'sell')
                     current_trade_open = True
-    print('Waiting')
+    print('Waiting 1 minute')
     sleep(60)
