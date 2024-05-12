@@ -1,4 +1,3 @@
-import logging
 from keys import key, secret
 from binance.um_futures import UMFutures
 import ta
@@ -7,8 +6,6 @@ import ta.trend
 import pandas as pd
 from time import sleep
 from binance.error import ClientError
-
-logging.basicConfig(filename='trading_usd.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 client = UMFutures(key=key, secret=secret)
 
@@ -29,7 +26,7 @@ def get_balance_usdt():
             if elem['asset'] == 'USDT':
                 return float(elem['balance'])
     except ClientError as error:
-        logging.error("Error occurred while fetching balance: %s", error)
+        print("Error occurred while fetching balance: %s", error)
 
 def get_tickers_usdt():
     return ['BTCUSDC']  # Only return BTCUSDC pair
@@ -44,25 +41,23 @@ def klines(symbol):
         resp = resp.astype(float)
         return resp
     except ClientError as error:
-        logging.error("Error occurred while fetching klines for %s: %s", symbol, error)
+        print("Error occurred while fetching klines for %s: %s", symbol, error)
 
 def set_leverage(symbol, level):
     try:
         response = client.change_leverage(
             symbol=symbol, leverage=level, recvWindow=6000
         )
-        logging.info("Set leverage for %s: %s", symbol, response)
     except ClientError as error:
-        logging.error("Error occurred while setting leverage for %s: %s", symbol, error)
+        print("Error occurred while setting leverage for %s: %s", symbol, error)
 
 def set_mode(symbol, type):
     try:
         response = client.change_margin_type(
             symbol=symbol, marginType=type, recvWindow=6000
         )
-        logging.info("Set margin type for %s: %s", symbol, response)
     except ClientError as error:
-        logging.error("Error occurred while setting margin type for %s: %s", symbol, error)
+        print("Error occurred while setting margin type for %s: %s", symbol, error)
 
 def get_price_precision(symbol):
     resp = client.exchange_info()['symbols']
@@ -85,22 +80,16 @@ def open_order(symbol, side):
         try:
             resp1 = client.new_order(symbol=symbol, side='BUY', type='LIMIT', quantity=qty, timeInForce='GTC',
                                      price=price)
-            logging.info("Placing buy order for %s", symbol)
-            logging.info("Order response: %s", resp1)
             sleep(2)
             sl_price = round(price - price * sl, price_precision)
             resp2 = client.new_order(symbol=symbol, side='SELL', type='STOP_MARKET', quantity=qty, timeInForce='GTC',
                                      stopPrice=sl_price)
-            logging.info("Setting stop loss for %s", symbol)
-            logging.info("Stop loss response: %s", resp2)
             sleep(2)
             tp_price = round(price + price * tp, price_precision)
             resp3 = client.new_order(symbol=symbol, side='SELL', type='TAKE_PROFIT_MARKET', quantity=qty,
                                      timeInForce='GTC', stopPrice=tp_price)
-            logging.info("Setting take profit for %s", symbol)
-            logging.info("Take profit response: %s", resp3)
         except ClientError as error:
-            logging.error("Error occurred while placing buy order for %s: %s", symbol, error)
+            print("Error occurred while placing buy order for %s: %s", symbol, error)
 
 def get_pos():
     try:
@@ -111,7 +100,7 @@ def get_pos():
                 pos.append(elem['symbol'])
         return pos
     except ClientError as error:
-        logging.error("Error occurred while fetching positions: %s", error)
+        print("Error occurred while fetching positions: %s", error)
 
 def check_orders():
     try:
@@ -121,14 +110,13 @@ def check_orders():
             sym.append(elem['symbol'])
         return sym
     except ClientError as error:
-        logging.error("Error occurred while checking orders: %s", error)
+        print("Error occurred while checking orders: %s", error)
 
 def close_open_orders(symbol):
     try:
         response = client.cancel_open_orders(symbol=symbol, recvWindow=6000)
-        logging.info("Closed open orders for %s: %s", symbol, response)
     except ClientError as error:
-        logging.error("Error occurred while closing open orders for %s: %s", symbol, error)
+        print("Error occurred while closing open orders for %s: %s", symbol, error)
 
 def str_rsi_signal(symbol):
     kl = klines(symbol)
@@ -138,31 +126,28 @@ def str_rsi_signal(symbol):
     kl['macd'] = ta.trend.macd_diff(kl.Close)
 
     if kl['macd'].iloc[-1] > 0:
-        if (rsi.iloc[-1] < 40 and
+        if ((rsi.iloc[-1] < 40 and
             rsi_k.iloc[-1] < 20 and rsi_k.iloc[-3] < rsi_d.iloc[-3] and
-            rsi_k.iloc[-2] < rsi_d.iloc[-2] and rsi_k.iloc[-1] > rsi_d.iloc[-1]):
-            return 'up'
-        elif (rsi.iloc[-2] < 30 < rsi.iloc[-1]):
+            rsi_k.iloc[-2] < rsi_d.iloc[-2] and rsi_k.iloc[-1] > rsi_d.iloc[-1]) or
+            (rsi.iloc[-2] < 30 < rsi.iloc[-1])):
             return 'up'
     elif kl['macd'].iloc[-1] < 0:
-        if (rsi.iloc[-1] > 60 and
+        if ((rsi.iloc[-1] > 60 and
             rsi_k.iloc[-1] > 80 and rsi_k.iloc[-3] > rsi_d.iloc[-3] and
-            rsi_k.iloc[-2] > rsi_d.iloc[-2] and rsi_k.iloc[-1] < rsi_d.iloc[-1]):
-            return 'down'
-        elif (rsi.iloc[-2] > 70 > rsi.iloc[-1]):
+            rsi_k.iloc[-2] > rsi_d.iloc[-2] and rsi_k.iloc[-1] < rsi_d.iloc[-1]) or
+            (rsi.iloc[-2] > 70 > rsi.iloc[-1])):
             return 'down'
     else:
         return 'none'
+
 
 while True:
     balance = get_balance_usdt()
     sleep(1)
     if balance is None:
-        logging.error('Cannot connect to API. Check IP, restrictions, or wait some time')
+        print('Cannot connect to API. Check IP, restrictions, or wait some time')
     if balance is not None:
-        logging.info("My balance is: %s USDT", balance)
         pos = get_pos()
-        logging.info("You have %s opened positions: %s", len(pos), pos)
         ord = check_orders()
         for elem in ord:
             if elem not in pos:
@@ -172,24 +157,19 @@ while True:
             if len(pos) < qty:
                 signal = str_rsi_signal('BTCUSDC')
                 if signal == 'up':
-                    logging.info('Found BUY signal for BTCUSDC')
                     set_mode('BTCUSDC', type)
                     sleep(1)
                     set_leverage('BTCUSDC', leverage)
                     sleep(1)
-                    logging.info('Placing order for BTCUSDC')
                     open_order('BTCUSDC', 'buy')
                     current_trade_open = True
                     sleep(10)
                 elif signal == 'down':
-                    logging.info('Found SELL signal for BTCUSDC')
                     set_mode('BTCUSDC', type)
                     sleep(1)
                     set_leverage('BTCUSDC', leverage)
                     sleep(1)
-                    logging.info('Placing order for BTCUSDC')
                     open_order('BTCUSDC', 'sell')
                     current_trade_open = True
                     sleep(10)
-    logging.info('Waiting')
     sleep(60)
