@@ -20,7 +20,7 @@ def get_balance_usdt():
     try:
         response = client.balance(recvWindow=6000)
         for elem in response:
-            if elem['asset'] == 'USDT':
+            if elem['asset'] == 'USDC':
                 return float(elem['balance'])
     except ClientError as error:
         print_error(error)
@@ -178,7 +178,7 @@ while True:
     if balance is None:
         print('Can\'t connect to API. Check IP, restrictions or wait some time')
     if balance is not None:
-        print("My balance is: ", balance, " USDT")
+        print("My balance is: ", balance, " USDC")
         # getting position list:
         pos = []
         pos = get_pos()
