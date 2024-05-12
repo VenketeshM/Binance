@@ -12,7 +12,7 @@ client = UMFutures(key=key, secret=secret)
 
 tp = 0.005  # 1 percent
 sl = 0.001  # 0.5 percent
-volume = 10  # volume for one order (if its 10 and leverage is 10, then you put 1 usdt to one position)
+volume = 50  # volume for one order (if its 10 and leverage is 10, then you put 1 usdt to one position)
 leverage = 10
 type = 'ISOLATED'  # type is 'ISOLATED' or 'CROSS'
 qty = 1  # Amount of concurrent opened positions

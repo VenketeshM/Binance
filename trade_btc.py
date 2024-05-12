@@ -20,12 +20,12 @@ qty = 1  # Amount of concurrent opened positions
 current_trade_open = False
 symbol = ''
 
-# getting your futures balance in USDT
+# getting your futures balance in USDC
 def get_balance_usdt():
     try:
         response = client.balance(recvWindow=6000)
         for elem in response:
-            if elem['asset'] == 'USDT':
+            if elem['asset'] == 'USDC':
                 return float(elem['balance'])
     except ClientError as error:
         print("Error occurred:", error)
@@ -165,7 +165,7 @@ while True:
     if balance is None:
         print('Cannot connect to API. Check IP, restrictions, or wait some time')
     if balance is not None:
-        print("My balance is: ", balance, " USDT")
+        print("My balance is: ", balance, " USDC")
         pos = get_pos()
         print(f'You have {len(pos)} opened positions:\n{pos}')
         ord = check_orders()
